@@ -1,0 +1,47 @@
+service: serverless-svelte-${self:provider.region}
+
+frameworkVersion: '>=1.60.4 <2.0.0'
+
+custom:
+  stage: ${opt:stage, 'local'}
+  stackname: ${self:service}-${self:custom.stage}
+  debug: ${opt:debug, 'false'}
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+plugins:
+  - serverless-iam-roles-per-function
+  - serverless-webpack
+  - serverless-offline
+
+provider:
+  name: aws
+  region: ${opt:region, 'us-east-1'}
+  endpointType: REGIONAL
+  runtime: nodejs12.x
+  logRetentionInDays: 14
+  tracing:
+    apiGateway: false # Set to true to turn on X-Ray tracing
+    lambda: false # Set to true to turn on X-Ray tracing
+  deploymentBucket:
+    name: serverless-svelte-deploys
+    blockPublicAccess: true
+  # Uncomment to add permissions for X-Ray tracing of service.
+  # iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #       - xray:PutTraceSegments
+  #       - xray:PutTelemetryRecords
+  #     Resource: '*'
+
+functions:
+  server:
+    name: svelte-server-${self:custom.stage}
+    description: Serves Svelte website using Fastify serverless.
+    handler: app/lambda.handler
+    events:
+      - http: GET /
+      - http: GET /{proxy+}
+    environment:
+      DEBUG: ${self:custom.debug}
+      REGION: ${self:provider.region}
