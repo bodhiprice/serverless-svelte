@@ -1,26 +1,24 @@
 'use strict';
 require('make-promises-safe');
 const fastify = require('fastify');
-const log = require('lambda-log');
+const log = require('lambda-log'); // Structured logs
 const path = require('path');
-const app = require('./public/App.js');
+const app = require('./public/App.js'); // Compiled Svelte app
 const renderMarkup = require('./util/renderMarkup');
 
+// If the DEBUG env variable is true, log.debug() wil send structured logs to CloudWatch.
 log.options.debug = process.env.DEBUG;
-
-log.debug('REGION', process.env.REGION);
 
 const server = fastify({
   ignoreTrailingSlash: true
 });
 
-const publicPath = path.resolve(__dirname, 'public');
-
+// Handle static assets.
 server.register(require('fastify-static'), {
-  root: publicPath,
+  root: path.resolve(__dirname, 'public'),
   prefix: '/assets/',
   setHeaders: function(res) {
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    res.setHeader('Cache-Control', 'public, max-age=900'); // One year 31536000
   }
 });
 
@@ -32,9 +30,8 @@ server.get('/health', (request, reply) => {
     .send('OK');
 });
 
+// Called during local development.
 if (require.main === module) {
-  // Called directly i.e. "node app"
-  // Handles requests to the main server.
   server.get('*', (request, reply) => {
     // Get the rendered markup.
     const markup = renderMarkup(app, request.raw.url);
@@ -43,7 +40,7 @@ if (require.main === module) {
       .code(200)
       .headers({
         'Content-Type': 'text/html; charset=utf-8',
-        'x-region': process.env.REGION // Allows for testing the regional deployments.
+        'x-region': process.env.REGION // Allows for testing the regional deployments. Safe to delete.
       })
       .send(markup);
   });
@@ -52,13 +49,13 @@ if (require.main === module) {
     log.debug('server listening on 3000');
   });
 } else {
-  // Handles requests to the main server.
+  // This code is run on Lambda.
   server.get('*', (request, reply) => {
     // Get the event passed in from API Gateway.
     const event = JSON.parse(
       decodeURIComponent(request.headers['x-apigateway-event'])
     );
-    // Log the event so that we have it in CloudWatch.
+    // Log the event so that we have it in CloudWatch for debugging.
     log.debug('EVENT', event);
 
     // Get the rendered markup.

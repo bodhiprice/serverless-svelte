@@ -3,7 +3,7 @@ service: serverless-svelte-${self:provider.region}
 frameworkVersion: '>=1.60.4 <2.0.0'
 
 custom:
-  stage: ${opt:stage, 'local'}
+  stage: ${opt:stage, 'dev'}
   stackname: ${self:service}-${self:custom.stage}
   debug: ${opt:debug, 'true'}
   serverless-iam-roles-per-function:
@@ -18,18 +18,11 @@ provider:
   endpointType: REGIONAL
   runtime: nodejs12.x
   logRetentionInDays: 14
-  tracing:
-    apiGateway: false # Set to true to turn on X-Ray tracing
-    lambda: false # Set to true to turn on X-Ray tracing
   deploymentBucket:
     name: serverless-svelte-deploys
-  # Uncomment to add permissions for X-Ray tracing of service.
-  # iamRoleStatements:
-  #   - Effect: Allow
-  #     Action:
-  #       - xray:PutTraceSegments
-  #       - xray:PutTelemetryRecords
-  #     Resource: '*'
+  apiGateway:
+    binaryMediaTypes:
+      - '*/*'
 
 functions:
   server:
@@ -43,3 +36,6 @@ functions:
       DEBUG: ${self:custom.debug}
       REGION: ${self:provider.region}
       NODE_ENV: production
+    package:
+      exclude:
+        - src/**

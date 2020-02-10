@@ -3,4 +3,9 @@
 </svelte:head>
 
 <h1>Home</h1>
-<p>Welcome to my website</p>
+<p>
+  This is a Svelte based website deployed to AWS using Serverless Framework. You
+  can find the repo
+  <a href="https://github.com/j-hannah/serverless-svelte">here</a> for more
+  details.
+</p>
