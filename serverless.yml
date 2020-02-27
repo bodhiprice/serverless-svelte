@@ -30,8 +30,8 @@ functions:
     description: Serves Svelte website using Fastify serverless.
     handler: lambda.handler
     events:
-      - http: GET /
-      - http: GET /{proxy+}
+      - http: ANY /
+      - http: ANY /{proxy+}
     environment:
       DEBUG: ${self:custom.debug}
       REGION: ${self:provider.region}
