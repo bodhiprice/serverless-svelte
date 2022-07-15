@@ -15,7 +15,7 @@
     "fastify-static": "^2.6.0",
     "lambda-log": "^2.3.1",
     "make-promises-safe": "^5.1.0",
-    "svelte": "^3.18.1",
+    "svelte": "^3.49.0",
     "svelte-routing": "^1.4.0"
   },
   "devDependencies": {
